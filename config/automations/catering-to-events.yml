@@ -1,0 +1,132 @@
+# Catering Details to Events Automation
+# config/automations/catering-to-events.yml
+
+automation_name: "Create Event on Catering Details Record Creation"
+description: "Automatically creates Events record when new catering order is added"
+status: "active"
+
+trigger:
+  type: "record_created"
+  table: "Catering Details"
+  description: "Fires when new catering order is created"
+
+actions:
+  - action_type: "create_record"
+    target_table: "Events"
+    description: "Creates corresponding event in Events table"
+    
+    field_mappings:
+      Event_Name:
+        type: "formula"
+        value: '"🍽️ Catering - " + {Customer_Name} + " (" + {Guest_Count} + " guests)"'
+        example: "🍽️ Catering - Tech Corp (25 guests)"
+        
+      Start_Date:
+        type: "field_reference"
+        source_field: "Delivery_Date"
+        description: "Copy delivery date as event date"
+        
+      Start_Time:
+        type: "field_reference" 
+        source_field: "Delivery_Time"
+        description: "Copy delivery time as event time"
+        
+      Event_Type:
+        type: "static_value"
+        value: "🍽️ Catering"
+        description: "Static event type for all catering orders"
+        
+      Event_Owner:
+        type: "static_value"
+        value: "Staff"
+        description: "Default owner for catering events"
+        note: "Can be customized based on business rules"
+        
+      Notes:
+        type: "formula"
+        value: '"Order: $" + {Order_Total} + " • " + {Menu_Items} + IF({EzCater_Order_Number}, " • EzCater: " + {EzCater_Order_Number}, "")'
+        example: "Order: $375 • Sandwich platters, cookies • EzCater: 29M-55C"
+        
+      Event_Status:
+        type: "static_value"
+        value: "Scheduled"
+        description: "Default status for new events"
+        
+      Catering_Details:
+        type: "record_link"
+        description: "Link back to the catering order that triggered this event"
+
+conditions:
+  - field: "Customer_Name"
+    operator: "is_not_empty"
+    description: "Only create event if customer name is provided"
+    
+  - field: "Delivery_Date"
+    operator: "is_not_empty" 
+    description: "Only create event if delivery date is set"
+
+error_handling:
+  on_failure: "log_error"
+  notification: "admin_email"
+  retry_attempts: 3
+  retry_delay: "5_minutes"
+
+testing:
+  test_cases:
+    - name: "Standard EzCater Order"
+      input:
+        Customer_Name: "Test Corp"
+        Delivery_Date: "2025-06-20"
+        Delivery_Time: "12:00 PM"
+        Guest_Count: 25
+        Order_Total: 375
+        Menu_Items: "Sandwich platters, cookies"
+        EzCater_Order_Number: "29M-55C"
+      expected_output:
+        Event_Name: "🍽️ Catering - Test Corp (25 guests)"
+        Start_Date: "2025-06-20"
+        Start_Time: "12:00 PM"
+        Event_Type: "🍽️ Catering"
+        Notes: "Order: $375 • Sandwich platters, cookies • EzCater: 29M-55C"
+        
+    - name: "Custom Catering Order (No EzCater)"
+      input:
+        Customer_Name: "Local Business"
+        Delivery_Date: "2025-06-21"
+        Delivery_Time: "2:30 PM"
+        Guest_Count: 15
+        Order_Total: 225
+        Menu_Items: "Assorted pastries"
+      expected_output:
+        Event_Name: "🍽️ Catering - Local Business (15 guests)"
+        Notes: "Order: $225 • Assorted pastries"
+
+companion_automations:
+  update_automation:
+    name: "Update Event on Catering Details Change"
+    trigger: "record_updated in Catering Details"
+    action: "update_linked_records in Events"
+    fields_to_sync:
+      - "Customer_Name → Event_Name"
+      - "Delivery_Date → Start_Date"
+      - "Delivery_Time → Start_Time"
+      - "Order_Total, Menu_Items → Notes"
+    conditions:
+      - "only_if_linked_event_exists"
+      - "only_if_key_fields_changed"
+
+monitoring:
+  success_metrics:
+    - "automation_run_count"
+    - "success_rate"
+    - "average_execution_time"
+  failure_tracking:
+    - "error_types"
+    - "failed_field_mappings"
+    - "retry_success_rate"
+
+notes:
+  - "This automation creates the operational-first data flow"
+  - "Catering Details remains the source of truth"
+  - "Events table becomes a calculated view of operations"
+  - "Update automation ensures data integrity"

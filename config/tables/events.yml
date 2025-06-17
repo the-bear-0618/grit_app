@@ -1,0 +1,172 @@
+# Events Table Structure
+# config/tables/events.yml
+
+table_name: "Events"
+description: "Main calendar view - auto-generated from detail tables"
+primary_field: "Event_Name"
+
+fields:
+  - name: "Event_Name"
+    type: "singleLineText"
+    description: "Display name for calendar (auto-populated from detail tables)"
+    primary: true
+    
+  - name: "Start_Date" 
+    type: "date"
+    options:
+      dateFormat: "us"
+    description: "Event date (copied from detail tables)"
+    required: true
+    
+  - name: "Start_Time"
+    type: "dateTime" 
+    options:
+      timeFormat: "12hour"
+      timeZone: "America/Chicago"
+    description: "Event start time (copied from detail tables)"
+    
+  - name: "Event_Type"
+    type: "singleSelect"
+    options:
+      choices:
+        - name: "🍽️ Catering"
+          color: "redBright"
+        - name: "🧺 Market" 
+          color: "blueBright"
+        - name: "🍞 Production"
+          color: "orangeBright"
+        - name: "🚚 Ordering & Deliveries"
+          color: "greenBright"
+        - name: "👥 Interviews"
+          color: "purpleBright"
+        - name: "🏪 Store Events"
+          color: "tealBright"
+        - name: "📈 Administrative"
+          color: "grayBright"
+        - name: "🧩 Miscellaneous"
+          color: "yellowBright"
+    description: "Category of event"
+    required: true
+    
+  - name: "Event_Owner"
+    type: "singleSelect"
+    options:
+      choices:
+        - name: "Kodiak Smith"
+          color: "blueBright"
+        - name: "Manager"
+          color: "greenBright"
+        - name: "Staff"
+          color: "grayBright"
+        - name: "Baker"
+          color: "orangeBright"
+    description: "Person responsible for event"
+    
+  - name: "Notes"
+    type: "multilineText"
+    description: "Additional details (auto-populated from detail tables)"
+    
+  - name: "Event_Status"
+    type: "singleSelect"
+    options:
+      choices:
+        - name: "Scheduled"
+          color: "blueBright"
+        - name: "In Progress"
+          color: "yellowBright"
+        - name: "Completed"
+          color: "greenBright"
+        - name: "Cancelled"
+          color: "redBright"
+    description: "Current status of event"
+
+linked_fields:
+  - name: "Catering_Details"
+    type: "multipleRecordLinks"
+    linked_table: "Catering Details"
+    description: "Link to catering order details"
+    
+  - name: "Market_Details"
+    type: "multipleRecordLinks" 
+    linked_table: "Market Details"
+    description: "Link to market event details"
+    
+  - name: "Production_Details"
+    type: "multipleRecordLinks"
+    linked_table: "Production Details" 
+    description: "Link to production batch details"
+    
+  - name: "Ordering_Details"
+    type: "multipleRecordLinks"
+    linked_table: "Ordering Details"
+    description: "Link to supplier order details"
+    
+  - name: "Interview_Details" 
+    type: "multipleRecordLinks"
+    linked_table: "Interview Details"
+    description: "Link to interview details"
+
+formula_fields:
+  - name: "Day_of_Week"
+    type: "formula"
+    formula: "DATETIME_FORMAT(Start_Date, 'dddd')"
+    description: "Calculated day of week for event"
+    
+  - name: "Display_Time"
+    type: "formula" 
+    formula: "DATETIME_FORMAT(Start_Time, 'h:mm A')"
+    description: "Formatted time display for UI"
+    
+  - name: "Days_Until_Event"
+    type: "formula"
+    formula: "DATETIME_DIFF(Start_Date, TODAY(), 'days')"
+    description: "Number of days until event (negative if past)"
+
+views:
+  - name: "All Events"
+    type: "grid"
+    sort:
+      - field: "Start_Date"
+        direction: "asc"
+      - field: "Start_Time" 
+        direction: "asc"
+        
+  - name: "Today's Events"
+    type: "grid"
+    filter: "Days_Until_Event = 0"
+    sort:
+      - field: "Start_Time"
+        direction: "asc"
+        
+  - name: "This Week"
+    type: "grid" 
+    filter: "AND(Days_Until_Event >= 0, Days_Until_Event <= 7)"
+    sort:
+      - field: "Start_Date"
+        direction: "asc"
+      - field: "Start_Time"
+        direction: "asc"
+        
+  - name: "Calendar View"
+    type: "calendar"
+    date_field: "Start_Date"
+    color_field: "Event_Type"
+
+glide_configuration:
+  primary_collection: true
+  display_field: "Event_Name"
+  detail_fields:
+    - "Display_Time"
+    - "Event_Type" 
+    - "Notes"
+    - "Event_Owner"
+  filter_options:
+    - field: "Event_Type"
+      type: "choice"
+    - field: "Event_Owner"
+      type: "choice"
+  sort_options:
+    - field: "Start_Date"
+      direction: "ascending"
+    - field: "Start_Time"
+      direction: "ascending"

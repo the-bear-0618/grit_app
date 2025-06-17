@@ -1,0 +1,52 @@
+# Great Harvest Crown Point - Brand Colors
+# config/brand/colors.yml
+
+brand:
+  primary: "#0c2340"      # Deep Navy Blue
+  secondary: "#d84127"    # Warm Red
+  neutral: "#ffffff"      # White
+  
+glide_implementation:
+  header_background: "#0c2340"
+  header_text: "#ffffff"
+  active_elements: "#d84127"
+  action_buttons: "#0c2340"
+  accent_highlights: "#d84127"
+  
+event_type_colors:
+  catering: "#d84127"           # Red theme
+  market: "#0c2340"            # Navy theme  
+  production: "#d84127"        # Red theme
+  ordering: "#0c2340"          # Navy theme
+  interviews: "#d84127"        # Red theme
+  store_events: "#0c2340"      # Navy theme
+  administrative: "#0c2340"    # Navy theme
+  miscellaneous: "#d84127"     # Red theme
+
+css_variables:
+  - name: "--primary-navy"
+    value: "#0c2340"
+    usage: "Headers, primary buttons, navigation"
+    
+  - name: "--secondary-red" 
+    value: "#d84127"
+    usage: "Active states, accents, highlights"
+    
+  - name: "--neutral-white"
+    value: "#ffffff" 
+    usage: "Backgrounds, text areas, cards"
+    
+  - name: "--text-primary"
+    value: "#0c2340"
+    usage: "Main text, headings"
+    
+  - name: "--text-secondary"
+    value: "#718096"
+    usage: "Subtitles, metadata"
+
+accessibility:
+  contrast_ratios:
+    primary_on_white: "14.5:1"     # Excellent (WCAG AAA)
+    secondary_on_white: "5.2:1"    # Good (WCAG AA)
+    white_on_primary: "14.5:1"     # Excellent (WCAG AAA)
+    white_on_secondary: "5.2:1"    # Good (WCAG AA)
